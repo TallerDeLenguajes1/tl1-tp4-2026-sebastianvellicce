@@ -43,56 +43,126 @@ Nodo *crearNuevoNodo(int *puntID)
     return nuevoNodo;
 }
 
-void interfaz(Nodo **Start, int *id)
+Nodo *QuitarNodo (int Id,Nodo **Start)
 {
-    
+    Nodo *nodoAux = *Start;
+    Nodo *nodoAnt = NULL;
+    while(nodoAux!=NULL && nodoAux->T.TareaID != Id)
+    {
+        nodoAnt = nodoAux;
+        nodoAux = nodoAux->Siguiente;
+    }
+    if(nodoAux != NULL)
+    {
+        if(nodoAux == (*Start))
+        {
+            (*Start) = nodoAux->Siguiente;
+        }
+        else
+        {
+            nodoAnt->Siguiente = nodoAux->Siguiente;
+        }
+        nodoAux->Siguiente = NULL;
+    }
+    return (nodoAux);
+}
 
+void InserarNodo(Nodo **Start, Nodo *Nodo)
+{
+    Nodo->Siguiente=*Start;
+    *Start = Nodo;
+}
+
+void listarTareas (Nodo **Start)
+{
+    int i=1;
+    if (*Start == NULL)
+    {
+        printf("La lista está vacia.\n");
+        return;
+    }
+    Nodo *NodoAuxiliar = *Start; 
+    while (NodoAuxiliar != NULL)
+    {
+        printf("%d) ID: %d\n",i,NodoAuxiliar->T.TareaID);
+        printf("Descripcion: %s\n", NodoAuxiliar->T.Descripcion);
+        printf("Duracion : %d horas\n",NodoAuxiliar->T.Duracion );
+        i++;
+        NodoAuxiliar = NodoAuxiliar->Siguiente;
+    }
+}
+
+void mostrarMenu ()
+{
+    printf("\n=====================================\n");
+    printf("        GESTOR DE TAREAS\n");
+    printf("=====================================\n");
+    printf("1. Agregar tarea\n");
+    printf("2. Pasar tarea de pendiente a realizada\n");
+    printf("3. Mostar tareas pendientes\n");
+    printf("4. Mostrar tareas realizadas\n");
+    printf("5. Buscar tarea\n");
+    printf("6. Salir\n");
+    printf("=====================================\n");
 }
 
 int main()
 {
-    Tarea *TareasPendientes;
-    Tarea *TareasRealizadas;
+    Nodo *TareasPendientes;
+    Nodo *TareasRealizadas;
     int cantidTareasIngresadas, opcion, id=1000;
 
-        printf("\n=====================================\n");
-        printf("        GESTOR DE TAREAS\n");
-        printf("=====================================\n");
-        printf("1. Agregar tarea\n");
-        printf("2. Eliminar tarea\n");
-        printf("3. Buscar tarea\n");
-        printf("4. Mostrar todas las tareas\n");
-        printf("5. Salir\n");
-        printf("=====================================\n");
-        printf("Ingrese una opcion: ");
-        scanf("%d", &opcion);
-        do {
+    TareasPendientes=crearListaVacia;
+    TareasRealizadas=crearListaVacia;
 
 
-            switch(opcion)
-            {
-                case 1: 
-                    Nodo *nuevoNodo = crearNuevoNodo(id);
+    mostrarMenu();
+    printf("Ingrese una opcion: ");
+    scanf("%d", &opcion);
+    do {
+        switch(opcion)
+        {
+            case 1: 
+                int IdCambioARealizado;
+                Nodo *nuevoNodo = crearNuevoNodo(id);
                     InsertarAlInicio(TareasPendientes , nuevoNodo);
                     printf("Tarea agregada con exito!\n");
                     break;
 
                 case 2: 
-                    /* QuitarNodo               */ 
+                    Nodo *NodoATransferir;
+                    printf("Ingresa el ID de la tarea que quieres pasar a realizada\n");
+                    scanf("%d",&IdCambioARealizado);
+                    NodoATransferir = QuitarNodo(IdCambioARealizado,&TareasPendientes);
+
+                    if(NodoATransferir != NULL)
+                    {
+                        InserarNodo(&TareasRealizadas, NodoATransferir);
+                    }
+                    else
+                    {
+                        printf("No se encontro la tarea pendiente.\n");
+                    }
+
                     break;
-                case 3: 
-                    /* buscarNodo               */ 
+                case 3:
+                    printf("Estas son las tareas pendientes:\n");
+                    listarTareas(&TareasPendientes);
                     break;
                 case 4: 
-                    /* mostrarLista             */ 
+                    printf("Estas son las tareas realizadas:\n");
+                    listarTareas(&TareasRealizadas);
                     break;
-                case 5: 
+                case 5:
+
+                case 6: 
                     printf("Saliendo...\n");
                     break;
                 default:
                     printf("Opcion invalida\n");
                     break;
             }
+        mostrarMenu();    
         } while(opcion != 5);    
 
 

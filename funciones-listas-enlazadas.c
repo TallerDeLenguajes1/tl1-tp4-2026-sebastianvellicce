@@ -41,7 +41,7 @@ void InsertarAlFinal(Tnodo **Start, Tnodo * Nodo)
         return;
     }
 
-    Tnodo *aux= Start;
+    Tnodo *aux= *Start;
     while(aux->siguiente)
     {
         aux=aux->siguiente;
