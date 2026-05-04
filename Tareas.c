@@ -12,7 +12,7 @@ typedef struct Tarea
 typedef struct Nodo
 {
     Tarea T;
-    Nodo *Siguiente;
+    struct Nodo *Siguiente;
 } Nodo;
 
 Nodo * crearListaVacia()
@@ -41,6 +41,7 @@ Nodo *crearNuevoNodo(int *puntID)
     }
     nuevoNodo->T.TareaID=*puntID;
     (*puntID)++;
+    nuevoNodo->Siguiente = NULL;
     return nuevoNodo;
 }
 
@@ -68,7 +69,7 @@ Nodo *QuitarNodo (int Id,Nodo **Start)
     return (nodoAux);
 }
 
-void InserarNodo(Nodo **Start, Nodo *Nodo)
+void InsertarNodo(Nodo **Start, Nodo *Nodo)
 {
     Nodo->Siguiente=*Start;
     *Start = Nodo;
@@ -145,11 +146,35 @@ void BuscarPorPalabras(Nodo *Start, char *palabraBuscada)
 
 }
 
+void liberarListas(Nodo **Start)
+{
+    Nodo *aux;
+
+    while(*Start != NULL)
+    {
+        aux = *Start;
+
+        *Start = (*Start)->Siguiente;
+
+        free(aux->T.Descripcion);
+
+        free(aux);
+    }
+}
+
+void EliminarNodo(Nodo *Nodo)
+{
+    if(Nodo)
+    {
+        free(Nodo);
+    }
+}
+
 int main()
 {
     Nodo *TareasPendientes;
     Nodo *TareasRealizadas;
-    int cantidTareasIngresadas, opcion, id=1000, opcionBusqueda=0,IdBuscar;
+    int  opcion, id=1000, opcionBusqueda=0,IdBuscar,IdCambioARealizado;
     char *palabraClave;
     palabraClave= (char*)malloc(sizeof(char)*100);
 
@@ -163,14 +188,16 @@ int main()
     do {
         switch(opcion)
         {
-            case 1: 
-                int IdCambioARealizado;
+            case 1:
+            {
                 Nodo *nuevoNodo = crearNuevoNodo(&id);
-                    InsertarNodo(TareasPendientes , nuevoNodo);
+                    InsertarNodo(&TareasPendientes , nuevoNodo);
                     printf("Tarea agregada con exito!\n");
                     break;
+            }
 
-                case 2: 
+                case 2:
+                {
                     Nodo *NodoATransferir;
                     printf("Ingresa el ID de la tarea que quieres pasar a realizada\n");
                     scanf("%d",&IdCambioARealizado);
@@ -178,7 +205,7 @@ int main()
 
                     if(NodoATransferir != NULL)
                     {
-                        InserarNodo(&TareasRealizadas, NodoATransferir);
+                        InsertarNodo(&TareasRealizadas, NodoATransferir);
                     }
                     else
                     {
@@ -186,6 +213,7 @@ int main()
                     }
 
                     break;
+                } 
                 case 3:
                     printf("Estas son las tareas pendientes:\n");
                     listarTareas(&TareasPendientes);
@@ -195,6 +223,8 @@ int main()
                     listarTareas(&TareasRealizadas);
                     break;
                 case 5:
+                {
+                    opcionBusqueda = 0;
                     while(opcionBusqueda != 1 && opcionBusqueda!=2)
                     {
                         printf("1-Buscar por ID.\n2-Buscar por palabra clave\n");
@@ -205,14 +235,18 @@ int main()
                     {
                         printf("Ingrese el ID de la tarea que quiere buscar");
                         scanf("%d",&IdBuscar);
-                        if(BuscarPorId(&TareasPendientes,IdBuscar))
+
+                        Nodo *auxBusquedaIdPendientes=BuscarPorId(TareasPendientes,IdBuscar);
+                        Nodo *auxBusquedaIdRealizadas=BuscarPorId(TareasRealizadas,IdBuscar);
+
+                        if(auxBusquedaIdPendientes)
                         {
-                            listarTarea(BuscarPorId(&TareasPendientes,IdBuscar));
+                            listarTarea(auxBusquedaIdPendientes);
                             printf("La tarea esta pendiente.\n");
                         }
-                        else if(BuscarPorId(&TareasRealizadas,IdBuscar))
+                        else if(auxBusquedaIdRealizadas)
                         {
-                            listarTarea(BuscarPorId(&TareasRealizadas,IdBuscar));
+                            listarTarea(auxBusquedaIdRealizadas);
                             printf("La tarea esta realizada.\n");
                         }
                         else
@@ -229,14 +263,17 @@ int main()
                         palabraClave[strcspn(palabraClave,"\n")] = '\0';
 
                         printf("Las tareas pendientes con esa palabra clave:\n");
-                        BuscarPorPalabras(&TareasPendientes, palabraClave);
+                        BuscarPorPalabras(TareasPendientes, palabraClave);
 
                         printf("Las tareas realizadas con esa palabra clave:\n");
-                        BuscarPorPalabras(&TareasRealizadas, palabraClave);
-
-
+                        BuscarPorPalabras(TareasRealizadas, palabraClave);
                     }
-
+                    else
+                    {
+                        printf("No se encontraron tareas con la palabra clave.\n");
+                    }
+                    break;
+                }
                 case 6: 
                     printf("Saliendo...\n");
                     break;
@@ -245,8 +282,12 @@ int main()
                     break;
             }
         mostrarMenu();
+        printf("Ingrese una opcion: ");
         scanf("%d", &opcion);    
         } while(opcion != 6);    
-
-
+        
+        liberarListas(&TareasPendientes);
+        liberarListas(&TareasRealizadas);
+        free(palabraClave);
+        return 0;
 }
